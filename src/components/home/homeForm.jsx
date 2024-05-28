@@ -12,6 +12,7 @@ import { Table } from 'react-bootstrap';
 const Home = () => {
 
     const [data, setData] = useState(null)
+    const [dates, setDates] = useState([])
     const URL_HOLIDAYS = 'https://canada-holidays.ca/api/v1/holidays/'
 
     async function fetchData() {
@@ -24,7 +25,7 @@ const Home = () => {
             const response = await axios.request(holidaysRequest)
             setData(response.data)
 
-            console.log("Axios fetch success")
+            console.log("Axios fetch success")        
         } catch (error) {
             console.error("Error retrieving data: ", error)
         }
@@ -33,18 +34,75 @@ const Home = () => {
     useEffect(() => {
         fetchData()
 
-        const testYear = 2024;
-        const testMonth = 6;
-        const testDate = 1;
-        console.log(`There are ${getDaysInMonth(testYear, testMonth)} days in ${testMonth}`)
-        console.log(`${testDate}/${testMonth}/${testYear} is a ${zellersCongruence(testDate, testMonth, testYear)}`);
+        // const testYear = 2024;
+        // const testMonth = 6;
+        // const testDate = 1;
+        // console.log(`There are ${getDaysInMonth(testYear, testMonth)} days in ${testMonth}`)
+        // console.log(`${testDate}/${testMonth}/${testYear} is a ${zellersCongruence(testDate, testMonth, testYear)}`);
     }, [])
 
     useEffect(() => {
         if (data) {
             console.log("Data updated: ", data);
+
+            console.log("Adding dates")
+
+            const holidays = data['holidays']
+            const holidaysLength = Object.keys(holidays).length
+            var tempDates = []
+
+            // it'd be cool to be able to vectorize this operation
+            for (let i = 0; i < holidaysLength; i++) {
+                tempDates.push(holidays[i]['date'])
+            }
+
+            setDates(tempDates)
         }
     }, [data]);
+
+    // perform binary search for date
+    // returns the last searched index if the date is not found (which is the closest upcoming holiday)
+    const findClosestHoliday = (date) => {
+        var left = 0
+        console.log("dates test: ", dates)
+        var right = dates.length - 1
+
+        console.log("right: ", right)
+        var mid = Math.floor((left + right)/2)
+        var mid = ~~((left + right) / 2)
+        console.log("Mid: ", mid)
+
+        while (left <= right) {
+            // mid = Math.floor((left + right)/2)
+            mid = ~~((left + right) / 2)
+            if (date === dates[mid]) {
+                return dates[mid]
+            } else if (date > dates[mid]) {
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+
+        console.log("Returning this index: ", mid+1)
+        return dates[mid + 1]
+
+    }
+    // after dates are updated, perform binary search to find the closest date
+    // if a date is found, that means today is a holiday
+    // if a date is not found, then the next holiday is the upcoming holiday
+        // edge case where date is not found and it is at the end of the array
+    useEffect(() => {
+        if (dates) {
+            // get today's date
+            let currentDate = new Date()
+            console.log(`Current date: ${currentDate.toISOString().split('T')[0]}`)
+
+            // perform binary search on date
+            const holiday = findClosestHoliday(currentDate)
+            console.log("The date for the holiday is: ", holiday)
+        }
+    }, [dates])
 
     // functions for populating calendar 
 
@@ -130,43 +188,47 @@ const Home = () => {
                 // break;
         }
     }
-    
     return (
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Sunday</th>
-              <th>Monday</th>
-              <th>Tuesday</th>
-              <th>Wednesday</th>
-              <th>Thursday</th>
-              <th>Friday</th>
-              <th>Saturday</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {/* <tr>
-              <td>1</td>
-              <td>Mark</td>
-              <td>Otto</td>
-              <td>@mdo</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Jacob</td>
-              <td>Thornton</td>
-              <td>@fat</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td colSpan={2}>Larry the Bird</td>
-              <td>@twitter</td>
-            </tr> */}
-          </tbody>
-
-        </Table>
-      );
+        <>
+        </>
+    )
 }
 
 export default Home;
+
+    // return (
+    //     <Table striped bordered hover>
+    //       <thead>
+    //         <tr>
+    //           <th>Sunday</th>
+    //           <th>Monday</th>
+    //           <th>Tuesday</th>
+    //           <th>Wednesday</th>
+    //           <th>Thursday</th>
+    //           <th>Friday</th>
+    //           <th>Saturday</th>
+    //         </tr>
+    //       </thead>
+
+    //       <tbody>
+    //         {/* <tr>
+    //           <td>1</td>
+    //           <td>Mark</td>
+    //           <td>Otto</td>
+    //           <td>@mdo</td>
+    //         </tr>
+    //         <tr>
+    //           <td>2</td>
+    //           <td>Jacob</td>
+    //           <td>Thornton</td>
+    //           <td>@fat</td>
+    //         </tr>
+    //         <tr>
+    //           <td>3</td>
+    //           <td colSpan={2}>Larry the Bird</td>
+    //           <td>@twitter</td>
+    //         </tr> */}
+    //       </tbody>
+
+    //     </Table>
+    //   );
