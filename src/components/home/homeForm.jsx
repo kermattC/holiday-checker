@@ -1,17 +1,20 @@
 // this component is a simple API call without the need of a redux store
 // make an api call, get the data, save the data and do something with it
-// this gets a list of holidays in canada. Then finds the closest holiday
-// If today is a holiday, the holiday today will be returned
+
+// This component makes an API call to get a list of holidays in Canada
+// If today is a holiday, today's holiday today will be returned
     // otherwise, return the next closest holiday (searches via binary search)
 
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import '../../styles/styles.css'
  
 const Home = () => {
 
     const [data, setData] = useState(null)
     const [holidayNames, setHolidayNames] = useState([])
     const [provinceNames, setProvinceNames] = useState([])
+    const [todayHoliday, setTodayHoliday] = useState(false)
 
     const URL_HOLIDAYS = 'https://canada-holidays.ca/api/v1/holidays/'
 
@@ -48,6 +51,7 @@ const Home = () => {
             mid = ~~((left + right) / 2)
 
             if (targetDate === dates[mid]) {
+                setTodayHoliday(true)
                 return dates[mid]
             } else if (targetDate > dates[mid]) {
                 left = mid + 1
@@ -89,8 +93,9 @@ const Home = () => {
                 let currentDate = new Date().toISOString().split('T')[0];
 
                 console.log("Current date: ", currentDate)  
-                // holiday = findClosestHoliday('2024-06-25', dates);
-                holiday = findClosestHoliday(currentDate, dates);
+                // holiday = findClosestHoliday('2024-06-24', dates);
+                holiday = findClosestHoliday('2024-07-01', dates);
+                // holiday = findClosestHoliday(currentDate, dates);
 
 
                 if (holiday !== 'none') {
@@ -99,38 +104,41 @@ const Home = () => {
 
                     var mapStartTime = performance.now()
 
+                    const tempHolidayNames = []
+                    const tempProvinceNames = []
+                    var provinceNamesCounter = 0
+
                     // map holiday names to div
-                    const holidayNames = foundHolidays.map((holiday, index) => {
-
-                        // map province names to div (using the previous map since the provinces are nested within each object)
-                        const tempProvinceNames = holiday.provinces.map((province, provinceIndex) => {
-                            console.log("Mapping provinces: ", province.nameEn)
-
-                            return (
-                                <div key={provinceIndex} className='provinceName'>
-                                    {province.nameEn}
-                                </div>
-                            )
-                        })
-
-                        console.log("temp province names: ", tempProvinceNames)
-
-                        return ([
+                    foundHolidays.forEach((holiday, index) => {
+                        tempHolidayNames.push(
                             <div key={index} className='holidayName'>
                                 <h2>{holiday.nameEn}</h2>
-                            </div>      
-                            ,
-                            tempProvinceNames                      
-                        ])
+                            </div>
+                        );
+
+                        // map province names to div
+                        tempProvinceNames.push(
+                            <div className='provinceName' key={`provinceNames${+provinceNamesCounter}`}>
+                                <ul key={`province-list-${index}`}>
+                                    {holiday.provinces.map((province, provinceIndex) => {
+                                        console.log("Mapping provinces: ", province.nameEn)
+                                        return (
+                                            <li id={provinceIndex} key={`province+${provinceIndex}`} className='provinceNameItem'>
+                                                {province.nameEn}
+                                            </li>
+                                        )
+                                    })}
+                                </ul>
+                            </div>
+                        )
+                        provinceNamesCounter += 1
+
                     })
 
-                    console.log("holiday names before setting: ", holidayNames[0])
-                    setHolidayNames(holidayNames[0])
-                    setProvinceNames(holidayNames[1])
-
+                    setHolidayNames(tempHolidayNames)
+                    setProvinceNames(tempProvinceNames)
 
                     var mapEndTime = performance.now()
-
                     console.log(`Map time: ${mapEndTime - mapStartTime} milliseconds`)
 
                     // just a comprison to a for loop for fun
@@ -158,9 +166,26 @@ const Home = () => {
 
     return (
         <>
-            {holidayNames ? holidayNames : <div>No holidays found</div>}
-            {provinceNames ? provinceNames : <div>No provinces found</div>}
+            {
+                holidayNames.map((holiday, index) => (                            
+                    <div key={index}>
+                        {holiday}
+                        {provinceNames[index]}
+                    </div>
+                ))
+            } 
 
+
+            <div className='mainText'>
+                <div>Data retrieved from https://canada-holidays.ca/api</div>
+            </div>
+            
+            {
+                todayHoliday ? 
+                    <div>Special effects</div>
+                :
+                    <div>No special effects</div>
+            }
         </>
     );
 }
