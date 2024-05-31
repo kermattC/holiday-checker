@@ -8,13 +8,33 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import '../../styles/styles.css'
- 
+import '../../styles/flag-styles.scss'
+import goosePic from './goose.png';
+import { Button } from 'react-bootstrap';
+
 const Home = () => {
 
     const [data, setData] = useState(null)
+    const [holidayDate, setHolidayDate] = useState('')
+    const [holidayMonth, setHolidayMonth] = useState('')
     const [holidayNames, setHolidayNames] = useState([])
     const [provinceNames, setProvinceNames] = useState([])
     const [todayHoliday, setTodayHoliday] = useState(false)
+
+    const monthDict = {
+        '01': 'January',
+        '02': 'February',
+        '03': 'March',
+        '04': 'April',
+        '05': 'May',
+        '06': 'June',
+        '07': 'July',
+        '08': 'August',
+        '09': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'Decmber',
+    }
 
     const URL_HOLIDAYS = 'https://canada-holidays.ca/api/v1/holidays/'
 
@@ -94,7 +114,20 @@ const Home = () => {
 
                 console.log("Current date: ", currentDate)  
                 // holiday = findClosestHoliday('2024-06-24', dates);
-                holiday = findClosestHoliday('2024-07-01', dates);
+                // holiday = findClosestHoliday('2024-07-01', dates);
+                // holiday = findClosestHoliday('2024-02-01', dates);
+                holiday = findClosestHoliday(currentDate, dates);
+                console.log("holiday check: ", holiday)
+
+
+                const holidayStr = holiday.split('-')
+                const holidayDate = holidayStr[2]
+                const holidayMonth = holidayStr[1]
+
+                setHolidayDate(holidayDate)
+                setHolidayMonth(holidayMonth)
+
+                // console.log("Date check: ", holidayDate, " month check: ", monthDict[holidayMonth])
                 // holiday = findClosestHoliday(currentDate, dates);
 
 
@@ -111,20 +144,22 @@ const Home = () => {
                     // map holiday names to div
                     foundHolidays.forEach((holiday, index) => {
                         tempHolidayNames.push(
-                            <div key={index} className='holidayName'>
-                                <h2>{holiday.nameEn}</h2>
+                            <div key={index} className='div-holidayName'>
+                                <h2 className='holidayName'>{holiday.nameEn}</h2>
                             </div>
                         );
 
                         // map province names to div
                         tempProvinceNames.push(
                             <div className='provinceName' key={`provinceNames${+provinceNamesCounter}`}>
-                                <ul key={`province-list-${index}`}>
+                                <ul key={`province-list`}>
                                     {holiday.provinces.map((province, provinceIndex) => {
                                         console.log("Mapping provinces: ", province.nameEn)
                                         return (
-                                            <li id={provinceIndex} key={`province+${provinceIndex}`} className='provinceNameItem'>
-                                                {province.nameEn}
+                                            <li id={provinceIndex} key={`province+${provinceIndex}`} className={`province-${province.id}`}>
+                                                <h3>
+                                                    {province.nameEn}
+                                                </h3>
                                             </li>
                                         )
                                     })}
@@ -164,29 +199,83 @@ const Home = () => {
 
     }, [data]);
 
-    return (
-        <>
-            {
-                holidayNames.map((holiday, index) => (                            
-                    <div key={index}>
-                        {holiday}
-                        {provinceNames[index]}
-                    </div>
-                ))
-            } 
+    const [animationEnabled, setAnimationEnabled] = useState(true);
+    const toggleAnimation = () => {
+        console.log("Goose no longer flying")
+        setAnimationEnabled(!animationEnabled);
+    }
 
+    const [gooseAlive, setGooseAlive] = useState(true);
+    const toggleGoose = () => {
+        setGooseAlive(false)
+    }
+    return (
+        <div className='mainText'>
+            {
+                gooseAlive ? 
+                    <div className={`${animationEnabled ? 'goose-fly' : 'goose'}`}>
+                        <img src={goosePic} alt='Honk honk'/>
+                    </div>
+                :
+                    null
+            }
+            {
+                holidayNames ? (
+                    <div className='mainText'>
+                        { 
+                            // multipleHolidays ? <h4>The upcoming holidays are </h4> :  <h4>The upcoming holiday is </h4>                
+                            <h1 className='dateText'>Next holiday: {monthDict[holidayMonth]} {holidayDate}</h1>
+                        }
+
+                        {
+                        holidayNames.map((holiday, index) => (                            
+                            <div key={index} className='mainText'>
+                                <div> {holiday} </div>
+                                <h4>Happening in:</h4>
+                                <div> {provinceNames[index]} </div>
+                            </div>
+                        ))
+                    } 
+                    </div>
+                ) : (
+                    <div>There is no holiday</div>
+                )
+            }
+
+            <br/>
+
+            <div className='buttonGroup'>
+                <Button className='gooseBtn' disabled={gooseAlive ? false : true} onClick={toggleAnimation}>{animationEnabled ? 'Stop the goose': 'Activate the goose'}</Button>
+                <Button classNAme='gooseBtn' variant='danger' disabled={gooseAlive ? false : true} onClick={toggleGoose}>{gooseAlive ? 'Kill the goose': 'Goose dead'}</Button>
+            </div>
+
+            <br/>
+            <br/>
 
             <div className='mainText'>
                 <div>Data retrieved from https://canada-holidays.ca/api</div>
+                <div>Images:
+                    {'\t'} 
+                    <a href='https://pngimg.com/image/20526'>Goose</a>
+                    {', \t'}
+                    <a href='https://www.animationsoftware7.com/gif/leaf-fall/maple-red/'>Background</a>
+                    {', \t'}
+                    <a>Flags from wiki</a>
+                </div>
             </div>
             
-            {
+
+
+            {/*
+                TODO or never gonna touch this again - do something special if today is the holiday   
+            */}
+            {/* {
                 todayHoliday ? 
-                    <div>Special effects</div>
+                    <div className='mainText'>Special effects because it's the holiday</div>
                 :
-                    <div>No special effects</div>
-            }
-        </>
+                    <div className='mainText'>No special effects</div>
+            } */}
+        </div>
     );
 }
 

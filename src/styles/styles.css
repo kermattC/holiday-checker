@@ -1,13 +1,92 @@
+/* .josefin-sans-<uniquifier> {
+    font-family: "Josefin Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: <weight>;
+    font-style: normal;
+  } */
+  
 .holidayName{
-
+    /* display: block; */
+    /* color: green; */
+    font-size: 65px;
 }
 
 .provinceName {
+    /* display: block; */
+    /* color: red; */
+}
 
+/* .div-provinceName {
+    font-size: 50px;
+} */
+
+.dateText {
+    font-size: 100px;
 }
 
 .mainText {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    text-align: left;
+    margin-top: 5%;
+    z-index: 5;
+
+    font-family: "Josefin Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700
+}
+
+body {
+    background-image: url('assets/leaf.gif')
+}
+
+.gooseBtn {
+    margin-right: 10px;
+}
+
+.goose-fly,
+.goose {
+    width: 350px;
+    height: 350px;
+    z-index: 0;
+    position: absolute;
+    margin-right: 95%;
+}
+
+.goose-fly {
+    animation: fly 5s linear infinite;
+    /* width: 350px;
+    height: 350px;
+    z-index: 0;
+    position: absolute;
+    margin-right: 95%; */
+}
+
+
+@keyframes fly {
+    0% {
+        transform: translateX(0) translateY(0) rotateZ(0);
+    }
+
+    25% {
+        transform: translateX(100vw) rotateZ(180deg);
+    }
+
+    40% {
+        transform: translateY(-15vw) rotateZ(0deg);
+    }
+
+    55% {
+        transform: translateX(25vw) rotateZ(360deg)
+    }
+
+    70% {
+        transform: translateX(-10vw) translate(60vw) rotateZ(270deg);
+    }
+
+    95% {
+        transform: translateX(0) translate(0) rotateZ(180deg);
+    }
 }

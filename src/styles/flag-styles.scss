@@ -1,0 +1,38 @@
+// Define a list of provinces with their corresponding flag URLs
+$provinces: (
+  AB: './assets/AB.png',
+  BC: './assets/BC.png',
+  MB: './assets/MB.png',
+  NB: './assets/NB.png',
+  NL: './assets/NL.png',
+  NS: './assets/NS.png',
+  NT: './assets/NT.png',
+  NU: './assets/NU.png',
+  ON: './assets/ON.png',
+  PE: './assets/PE.png',
+  QC: './assets/QC.png',
+  SK: './assets/SK.png',
+  YT: './assets/YT.png'
+);
+
+// Loop through the provinces to generate CSS classes dynamically
+@each $province, $flag in $provinces {
+  .province-#{$province} {
+    list-style-type: none;
+    position: relative;
+    padding-left: 36px;
+
+    &::before {
+      content: '';
+      background-image: url('#{$flag}');
+      background-size: contain;
+      background-repeat: no-repeat;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-25%);
+      width: 32px;
+      height: 32px;
+    }
+  }
+}
