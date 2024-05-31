@@ -1,4 +1,4 @@
-#Holiday Checker
+# Holiday Checker
 
 Tired of typing in when the next holiday is so you can dream of when your next upcoming day off will be like? Well fear no longer fellow Canadian, I have created a website that does the check for you! All you need to do is visit the website and it'll find the next closest holiday. Unless if there is already a holiday happening today, then why are you even using this?
 
