@@ -1,8 +1,7 @@
-# React + Vite
+#Holiday Checker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tired of typing in when the next holiday is so you can dream of when your next upcoming day off will be like? Well fear no longer fellow Canadian, I have created a website that does the check for you! All you need to do is visit the website and it'll find the next closest holiday. Unless if there is already a holiday happening today, then why are you even using this?
 
-Currently, two official plugins are available:
+This is a react app that uses a single component and one API call to get data. I created this as a simple react app that was supposed to be quick but ended up taking longer as I got carried away.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+API for holiday data: https://canada-holidays.ca/api/v1/holidays/
