@@ -11,16 +11,19 @@ import '../../styles/styles.css'
 import '../../styles/flag-styles.scss'
 import goosePic from './goose.png';
 import { Button } from 'react-bootstrap';
+import dayjs, { Dayjs } from "dayjs";
+import { DatePicker } from '@mui/x-date-pickers';
 
 const Home = () => {
 
     const [data, setData] = useState(null)
+    const [holidays, setHolidays] = useState(null)
     const [holidayDate, setHolidayDate] = useState('')
     const [holidayMonth, setHolidayMonth] = useState('')
+    const [year, setYear] = useState('')    // this API only supports one year, which is currently 2024. So I'll use this to check that all user selected years is equal to whatever the API provides
     const [holidayNames, setHolidayNames] = useState([])
     const [provinceNames, setProvinceNames] = useState([])
-    const [todayHoliday, setTodayHoliday] = useState(false)
-
+    const [holidayDates, setHolidayDates] = useState([])
     const monthDict = {
         '01': 'January',
         '02': 'February',
@@ -35,7 +38,6 @@ const Home = () => {
         '11': 'November',
         '12': 'Decmber',
     }
-
     const URL_HOLIDAYS = 'https://canada-holidays.ca/api/v1/holidays/'
 
     async function fetchData() {
@@ -95,6 +97,8 @@ const Home = () => {
             console.log("Data updated: ", data);
 
             const holidays = data['holidays']
+            // console.log("holidays test: ", holidays)
+            setHolidays(holidays)   
             const holidaysLength = Object.keys(holidays).length
             var dates = []
 
@@ -106,98 +110,96 @@ const Home = () => {
             // the dates should already be sorted, but good to sort it just in case to ensure binary search will work
             dates.sort();
 
+            setHolidayDates(dates)
+
+            const currentDate = new Date().toISOString().split('T')[0];
+
+            console.log("Current date: ", currentDate)  
+            // holiday = findClosestHoliday('2024-06-24', dates);
+            // holiday = findClosestHoliday('2024-07-01', dates);
+            // holiday = findClosestHoliday('2024-02-01', dates);
+            const closestHoliday = findClosestHoliday(currentDate, dates);
+            console.log("holiday check: ", closestHoliday)
+
+            if (closestHoliday !== 'none') {
+                updateHolidayDetails(closestHoliday)
+            }
+
+
+            const holidayStr = closestHoliday.split('-')
+            const holidayDate = holidayStr[2]
+            const holidayMonth = holidayStr[1]
+            const year = holidayStr[0]
+
+            setHolidayDate(holidayDate)
+            setHolidayMonth(holidayMonth)
+            setYear(year)
+
             // console.log("dates after setting dates: ", dates)
 
-            var holiday = ''
-            if (dates.length > 0) {
-                let currentDate = new Date().toISOString().split('T')[0];
-
-                console.log("Current date: ", currentDate)  
-                // holiday = findClosestHoliday('2024-06-24', dates);
-                // holiday = findClosestHoliday('2024-07-01', dates);
-                // holiday = findClosestHoliday('2024-02-01', dates);
-                holiday = findClosestHoliday(currentDate, dates);
-                console.log("holiday check: ", holiday)
-
-
-                const holidayStr = holiday.split('-')
-                const holidayDate = holidayStr[2]
-                const holidayMonth = holidayStr[1]
-
-                setHolidayDate(holidayDate)
-                setHolidayMonth(holidayMonth)
-
-                // console.log("Date check: ", holidayDate, " month check: ", monthDict[holidayMonth])
-                // holiday = findClosestHoliday(currentDate, dates);
-
-
-                if (holiday !== 'none') {
-                    const foundHolidays = holidays.filter(h => h.date === holiday);
-                    console.log("Next closest holiday: ", holiday)
-
-                    var mapStartTime = performance.now()
-
-                    const tempHolidayNames = []
-                    const tempProvinceNames = []
-                    var provinceNamesCounter = 0
-
-                    // map holiday names to div
-                    foundHolidays.forEach((holiday, index) => {
-                        tempHolidayNames.push(
-                            <div key={index} className='div-holidayName'>
-                                <h2 className='holidayName'>{holiday.nameEn}</h2>
-                            </div>
-                        );
-
-                        // map province names to div
-                        tempProvinceNames.push(
-                            <div className='provinceName' key={`provinceNames${+provinceNamesCounter}`}>
-                                <ul key={`province-list`}>
-                                    {holiday.provinces.map((province, provinceIndex) => {
-                                        console.log("Mapping provinces: ", province.nameEn)
-                                        return (
-                                            <li id={provinceIndex} key={`province+${provinceIndex}`} className={`province-${province.id}`}>
-                                                <h3>
-                                                    {province.nameEn}
-                                                </h3>
-                                            </li>
-                                        )
-                                    })}
-                                </ul>
-                            </div>
-                        )
-                        provinceNamesCounter += 1
-
-                    })
-
-                    setHolidayNames(tempHolidayNames)
-                    setProvinceNames(tempProvinceNames)
-
-                    var mapEndTime = performance.now()
-                    console.log(`Map time: ${mapEndTime - mapStartTime} milliseconds`)
-
-                    // just a comprison to a for loop for fun
-                    // var forStartTime = performance.now()
-                    // for (let i = 0; i < foundHolidays.length; i++) {
-                    //     console.log(`Holiday name: ${foundHolidays[i]['nameEn']}`)
-                    //     const provinces = foundHolidays[i]['provinces']
-
-
-                    //     for (let p = 0; p < provinces.length; p++) {
-                    //         console.log(`Province(s): ${provinces[p]['nameEn']}`)
-                    //     }                        
-                    // }
-                    // var forEndTime = performance.now()
-
-                    // console.log(`For loop time: ${forEndTime - forStartTime} milliseconds`)
-
-                } else {
-                    console.log("Unfortunately there are no holidays left :(")
-                }
-            }
         }
 
     }, [data]);
+
+    const updateHolidayDetails = (holiday) => {
+        const holidayStr = holiday.split('-')
+        const holidayDate = holidayStr[2]
+        const holidayMonth = holidayStr[1]
+        const year = holidayStr[0]
+
+        setHolidayDate(holidayDate)
+        setHolidayMonth(holidayMonth)
+        setYear(year)
+
+        if (holiday !== 'none') {
+            const foundHolidays = data.holidays.filter(h => h.date === holiday);
+            console.log("Next closest holiday: ", holiday)
+
+            var mapStartTime = performance.now()
+
+            const tempHolidayNames = []
+            const tempProvinceNames = []
+            var provinceNamesCounter = 0
+
+            // map holiday names to div
+            foundHolidays.forEach((holiday, index) => {
+                tempHolidayNames.push(
+                    <div key={index} className='div-holidayName'>
+                        <h2 className='holidayName'>{holiday.nameEn}</h2>
+                    </div>
+                );
+
+                // map province names to div
+                tempProvinceNames.push(
+                    <div className='provinceName' key={`provinceNames${+provinceNamesCounter}`}>
+                        <ul key={`province-list`}>
+                            {holiday.provinces.map((province, provinceIndex) => {
+                                console.log("Mapping provinces: ", province.nameEn)
+                                return (
+                                    <li id={provinceIndex} key={`province+${provinceIndex}`} className={`province-${province.id}`}>
+                                        <h3>
+                                            {province.nameEn}
+                                        </h3>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    </div>
+                )
+                provinceNamesCounter += 1
+
+            })
+
+            setHolidayNames(tempHolidayNames)
+            setProvinceNames(tempProvinceNames)
+
+            var mapEndTime = performance.now()
+            console.log(`Map time: ${mapEndTime - mapStartTime} milliseconds`)
+
+        } else {
+            console.log("Unfortunately there are no holidays left :(")
+        }
+    }
 
     const [animationEnabled, setAnimationEnabled] = useState(true);
     const toggleAnimation = () => {
@@ -209,6 +211,32 @@ const Home = () => {
     const toggleGoose = () => {
         setGooseAlive(false)
     }
+
+    const setNewDate = (newDate) => {
+        // setNewDate(newDate);
+
+        console.log("new date; ", newDate)
+        console.log("day: ", newDate.$D)
+        const day = String(newDate.$D)
+        var month = String(newDate.$M + 1)
+        if (month.length == 1) {
+            month = '0' + month
+        }
+        const selectedYear = newDate.$y
+
+        if (selectedYear == year) {
+            const selectedDate = `${year}-${month}-${day}`
+            // console.log("Selected date: ", selectedDate)
+            // console.log(typeof(selectedDate))
+            const closestHoliday = findClosestHoliday(selectedDate, holidayDates);
+
+            console.log("Closest holiday: ", closestHoliday)
+            if (closestHoliday !== 'none') {
+                updateHolidayDetails(closestHoliday)
+            }
+        }
+    }
+    
     return (
         <div className='mainText'>
             {
@@ -243,10 +271,16 @@ const Home = () => {
             }
 
             <br/>
+            <form>
+                <DatePicker label="Check another date"  onChange={(e)=> setNewDate(e)}/>   
+            </form>
+
+            <br/>
+            <br/>
 
             <div className='buttonGroup'>
                 <Button className='gooseBtn' disabled={gooseAlive ? false : true} onClick={toggleAnimation}>{animationEnabled ? 'Stop the goose': 'Activate the goose'}</Button>
-                <Button classNAme='gooseBtn' variant='danger' disabled={gooseAlive ? false : true} onClick={toggleGoose}>{gooseAlive ? 'Kill the goose': 'Goose dead'}</Button>
+                <Button className='gooseBtn' variant='danger' disabled={gooseAlive ? false : true} onClick={toggleGoose}>{gooseAlive ? 'Kill the goose': 'Goose dead'}</Button>
             </div>
 
             <br/>
@@ -263,8 +297,6 @@ const Home = () => {
                     <a>Flags from wiki</a>
                 </div>
             </div>
-            
-
 
             {/*
                 TODO or never gonna touch this again - do something special if today is the holiday   
