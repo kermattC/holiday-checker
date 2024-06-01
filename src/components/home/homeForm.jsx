@@ -17,6 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 const Home = () => {
 
     const [data, setData] = useState(null)
+    const [holidays, setHolidays] = useState(null)
     const [holidayDate, setHolidayDate] = useState('')
     const [holidayMonth, setHolidayMonth] = useState('')
     const [year, setYear] = useState('')    // this API only supports one year, which is currently 2024. So I'll use this to check that all user selected years is equal to whatever the API provides
@@ -96,6 +97,8 @@ const Home = () => {
             console.log("Data updated: ", data);
 
             const holidays = data['holidays']
+            // console.log("holidays test: ", holidays)
+            setHolidays(holidays)   
             const holidaysLength = Object.keys(holidays).length
             var dates = []
 
@@ -139,93 +142,62 @@ const Home = () => {
     }, [data]);
 
     const updateHolidayDetails = (holiday) => {
-        var holiday = ''
-        if (holidayDates.length > 0) {
-            let currentDate = new Date().toISOString().split('T')[0];
+        const holidayStr = holiday.split('-')
+        const holidayDate = holidayStr[2]
+        const holidayMonth = holidayStr[1]
+        const year = holidayStr[0]
 
-            console.log("Current date: ", currentDate)  
-            // holiday = findClosestHoliday('2024-06-24', dates);
-            // holiday = findClosestHoliday('2024-07-01', dates);
-            // holiday = findClosestHoliday('2024-02-01', dates);
-            holiday = findClosestHoliday(currentDate, holidayDates);
-            console.log("holiday check: ", holiday)
+        setHolidayDate(holidayDate)
+        setHolidayMonth(holidayMonth)
+        setYear(year)
 
+        if (holiday !== 'none') {
+            const foundHolidays = data.holidays.filter(h => h.date === holiday);
+            console.log("Next closest holiday: ", holiday)
 
-            const holidayStr = holiday.split('-')
-            const holidayDate = holidayStr[2]
-            const holidayMonth = holidayStr[1]
-            const year = holidayStr[0]
+            var mapStartTime = performance.now()
 
-            setHolidayDate(holidayDate)
-            setHolidayMonth(holidayMonth)
-            setYear(year)
+            const tempHolidayNames = []
+            const tempProvinceNames = []
+            var provinceNamesCounter = 0
 
-            // console.log("Date check: ", holidayDate, " month check: ", monthDict[holidayMonth])
-            // holiday = findClosestHoliday(currentDate, dates);
+            // map holiday names to div
+            foundHolidays.forEach((holiday, index) => {
+                tempHolidayNames.push(
+                    <div key={index} className='div-holidayName'>
+                        <h2 className='holidayName'>{holiday.nameEn}</h2>
+                    </div>
+                );
 
-            if (holiday !== 'none') {
-                const foundHolidays = holidays.filter(h => h.date === holiday);
-                console.log("Next closest holiday: ", holiday)
+                // map province names to div
+                tempProvinceNames.push(
+                    <div className='provinceName' key={`provinceNames${+provinceNamesCounter}`}>
+                        <ul key={`province-list`}>
+                            {holiday.provinces.map((province, provinceIndex) => {
+                                console.log("Mapping provinces: ", province.nameEn)
+                                return (
+                                    <li id={provinceIndex} key={`province+${provinceIndex}`} className={`province-${province.id}`}>
+                                        <h3>
+                                            {province.nameEn}
+                                        </h3>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    </div>
+                )
+                provinceNamesCounter += 1
 
-                var mapStartTime = performance.now()
+            })
 
-                const tempHolidayNames = []
-                const tempProvinceNames = []
-                var provinceNamesCounter = 0
+            setHolidayNames(tempHolidayNames)
+            setProvinceNames(tempProvinceNames)
 
-                // map holiday names to div
-                foundHolidays.forEach((holiday, index) => {
-                    tempHolidayNames.push(
-                        <div key={index} className='div-holidayName'>
-                            <h2 className='holidayName'>{holiday.nameEn}</h2>
-                        </div>
-                    );
+            var mapEndTime = performance.now()
+            console.log(`Map time: ${mapEndTime - mapStartTime} milliseconds`)
 
-                    // map province names to div
-                    tempProvinceNames.push(
-                        <div className='provinceName' key={`provinceNames${+provinceNamesCounter}`}>
-                            <ul key={`province-list`}>
-                                {holiday.provinces.map((province, provinceIndex) => {
-                                    console.log("Mapping provinces: ", province.nameEn)
-                                    return (
-                                        <li id={provinceIndex} key={`province+${provinceIndex}`} className={`province-${province.id}`}>
-                                            <h3>
-                                                {province.nameEn}
-                                            </h3>
-                                        </li>
-                                    )
-                                })}
-                            </ul>
-                        </div>
-                    )
-                    provinceNamesCounter += 1
-
-                })
-
-                setHolidayNames(tempHolidayNames)
-                setProvinceNames(tempProvinceNames)
-
-                var mapEndTime = performance.now()
-                console.log(`Map time: ${mapEndTime - mapStartTime} milliseconds`)
-
-                // just a comprison to a for loop for fun
-                // var forStartTime = performance.now()
-                // for (let i = 0; i < foundHolidays.length; i++) {
-                //     console.log(`Holiday name: ${foundHolidays[i]['nameEn']}`)
-                //     const provinces = foundHolidays[i]['provinces']
-
-
-                //     for (let p = 0; p < provinces.length; p++) {
-                //         console.log(`Province(s): ${provinces[p]['nameEn']}`)
-                //     }                        
-                // }
-                // var forEndTime = performance.now()
-
-                // console.log(`For loop time: ${forEndTime - forStartTime} milliseconds`)
-
-            } else {
-                console.log("Unfortunately there are no holidays left :(")
-            }
+        } else {
+            console.log("Unfortunately there are no holidays left :(")
         }
     }
 
@@ -259,8 +231,12 @@ const Home = () => {
             const closestHoliday = findClosestHoliday(selectedDate, holidayDates);
 
             console.log("Closest holiday: ", closestHoliday)
+            if (closestHoliday !== 'none') {
+                updateHolidayDetails(closestHoliday)
+            }
         }
     }
+    
     return (
         <div className='mainText'>
             {
@@ -296,7 +272,7 @@ const Home = () => {
 
             <br/>
             <form>
-                <DatePicker label="Check another date" defaultValue={dayjs()} onChange={(e)=> setNewDate(e)}/>   
+                <DatePicker label="Check another date"  onChange={(e)=> setNewDate(e)}/>   
             </form>
 
             <br/>
