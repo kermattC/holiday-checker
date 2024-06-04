@@ -11,7 +11,6 @@ import '../../styles/styles.css'
 import '../../styles/flag-styles.scss'
 import goosePic from './goose.png';
 import { Button } from 'react-bootstrap';
-import dayjs, { Dayjs } from "dayjs";
 import { DatePicker } from '@mui/x-date-pickers';
 
 const Home = () => {
@@ -92,6 +91,38 @@ const Home = () => {
         }
     }
 
+    // finding closest holiday via linear search, used to compare binary search
+    // const findClosestHoliday = (targetDate, dates) => {
+    //     var smallestDiff = 0 
+    //     var diff = 0
+    //     var nextClosest = ''
+
+    //     const d1 = new Date(targetDate)
+
+    //     for (let i = 0; i < dates.length; i++) {
+    //         const d2 = new Date(dates[i])
+
+    //         if (targetDate === dates[i]){
+    //             return dates[i]
+    //         } else {
+
+    //             diff = Math.abs(d2-d1)
+    //             console.log("Diff: ", diff, " smallest diff: ", smallestDiff)
+
+    //             if (i === 0) {
+    //                 smallestDiff = diff
+    //             }
+    //             if (diff < smallestDiff) {
+    //                 nextClosest = dates[i]
+    //                 smallestDiff = diff
+    //             }
+                
+    //         }
+    //     }
+    //     console.log("ext closest: ", nextClosest)
+    //     return nextClosest;
+    // }
+
     useEffect(() => {
         if (data) {
             console.log("Data updated: ", data);
@@ -118,7 +149,14 @@ const Home = () => {
             // holiday = findClosestHoliday('2024-06-24', dates);
             // holiday = findClosestHoliday('2024-07-01', dates);
             // holiday = findClosestHoliday('2024-02-01', dates);
+
+            var findHolidayStartTime = performance.now()
+
             const closestHoliday = findClosestHoliday(currentDate, dates);
+
+            var findHolidayEndTime = performance.now()
+            console.log(`Find holiday time: ${findHolidayEndTime - findHolidayStartTime} milliseconds`)
+
             console.log("holiday check: ", closestHoliday)
 
             if (closestHoliday !== 'none') {
@@ -295,6 +333,10 @@ const Home = () => {
                     <a href='https://www.animationsoftware7.com/gif/leaf-fall/maple-red/'>Background</a>
                     {', \t'}
                     <a>Flags from wiki</a>
+                </div>
+                <div>
+                    Check out my {'\t'}
+                    <a href='https://github.com/kermattC/holiday-checker'>Github repo</a>
                 </div>
             </div>
 
