@@ -18,7 +18,7 @@ const Home = () => {
     const [data, setData] = useState(null)
     const [holidays, setHolidays] = useState(null)
     const [holidayDate, setHolidayDate] = useState('')
-    const [holidayMonth, setHolidayMonth] = useState('')
+    const [holidayMonth, setHolidayMonth] = useState('')    
     const [year, setYear] = useState('')    // this API only supports one year, which is currently 2024. So I'll use this to check that all user selected years is equal to whatever the API provides
     const [holidayNames, setHolidayNames] = useState([])
     const [provinceNames, setProvinceNames] = useState([])
@@ -72,7 +72,7 @@ const Home = () => {
             mid = ~~((left + right) / 2)
 
             if (targetDate === dates[mid]) {
-                setTodayHoliday(true)
+                // setTodayHoliday(true)
                 return dates[mid]
             } else if (targetDate > dates[mid]) {
                 left = mid + 1
